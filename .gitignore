@@ -1,0 +1,16 @@
+# Temporary/test files
+*.backup
+*.tmp
+*.temp
+test-*.*
+temp-*.*
+
+# Personal files
+*.docx
+*.wav
+*.lnk
+*.jfif
+
+# Specific folders
+backup_files/
+jobs*/
