@@ -6,12 +6,11 @@
 <title>CustomerSegmentation-Bank</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <!-- address column layout -->
 <style>
-  /* Fix for column layout issues */
   .jp-Cell {
     display: block !important;
     width: 100% !important;
     max-width: 100% !important;
-    column-span: all !important; /* Ensures cell spans across all columns */
+    column-span: all !important; / Ensures cell spans across all columns /
   }
   
   .jp-InputArea, 
@@ -7540,7 +7539,83 @@ a.anchor-link {
     white-space: normal;
   }
 </style>
-<!-- End of mermaid configuration --></head>
+<!-- End of mermaid configuration -->
+<!-- Add this right before the closing </body> tag -->
+<script>
+  // Function to fix column layout issues
+  function fixColumnLayout() {
+    // Target the specific elements with Jupyter notebook classes
+    const cells = document.querySelectorAll('.jp-Cell');
+    const inputAreas = document.querySelectorAll('.jp-InputArea, .jp-Cell-inputWrapper, .jp-RenderedHTMLCommon, .jp-RenderedMarkdown');
+    const lists = document.querySelectorAll('ul, ol');
+    
+    // Apply inline styles to force block display and full width
+    cells.forEach(cell => {
+      cell.style.display = 'block';
+      cell.style.width = '100%';
+      cell.style.maxWidth = '100%';
+      cell.style.columnSpan = 'all';
+      cell.style.cssFloat = 'none';
+      cell.style.position = 'relative';
+    });
+    
+    inputAreas.forEach(area => {
+      area.style.display = 'block';
+      area.style.width = '100%';
+      area.style.maxWidth = '100%';
+      area.style.cssFloat = 'none';
+    });
+    
+    lists.forEach(list => {
+      list.style.display = 'block';
+      list.style.width = '100%';
+    });
+    
+    // Find possible parent elements that might have column settings
+    const possibleColumnContainers = [
+      document.body,
+      document.querySelector('main'),
+      document.querySelector('.container'),
+      document.querySelector('.content'),
+      ...document.querySelectorAll('div[class*="col"], section, article')
+    ];
+    
+    // Remove column settings from all possible containers
+    possibleColumnContainers.forEach(container => {
+      if (container) {
+        container.style.columnCount = '1';
+        container.style.columns = 'auto';
+        container.style.columnGap = '0';
+        container.style.columnWidth = 'auto';
+      }
+    });
+    
+    // Also try to find the specific element causing the column layout
+    // Check for any elements with computed style having columns
+    const allElements = document.querySelectorAll('*');
+    allElements.forEach(el => {
+      const style = window.getComputedStyle(el);
+      if (style.columnCount !== '1' && style.columnCount !== 'auto') {
+        el.style.columnCount = '1';
+        el.style.columns = 'auto';
+      }
+    });
+  }
+  
+  // Run the fix immediately
+  fixColumnLayout();
+  
+  // Also run it after a slight delay to ensure it applies after any other scripts
+  setTimeout(fixColumnLayout, 500);
+  
+  // Run it again if window is resized
+  window.addEventListener('resize', fixColumnLayout);
+  
+  // For good measure, run it again after everything is loaded
+  window.addEventListener('load', fixColumnLayout);
+</script>
+
+</head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c00b7296-6ec3-4831-8d19-0fc154da8014">
