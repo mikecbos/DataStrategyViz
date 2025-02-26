@@ -4,6 +4,38 @@
 <head><meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>CustomerSegmentation-Bank</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<!-- address column layout -->
+<style>
+  /* Fix for column layout issues */
+  .jp-Cell {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    column-span: all !important; /* Ensures cell spans across all columns */
+  }
+  
+  .jp-InputArea, 
+  .jp-Cell-inputWrapper,
+  .jp-RenderedHTMLCommon,
+  .jp-RenderedMarkdown {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+  }
+  
+  /* If there are any column layout properties in the document */
+  body, main, .container, .content {
+    column-count: 1 !important;
+    column-gap: 0 !important;
+    columns: auto !important;
+  }
+  
+  /* Ensure lists display properly */
+  ul, ol {
+    width: 100% !important;
+    display: block !important;
+  }
+</style>
 <style type="text/css">
     pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
@@ -11537,7 +11569,7 @@ PCA_5            -0.592200          0.364047
 </ul>
 <p>Customers' perception of support services must be improved by tailoring customer support strategies to the distinct needs of clusters identified in this study. Drivers of dissatisfactions were segmented by an ensemble clustering analysis. Here are  specific actions associated with each:</p>
 <ol>
-<li>High Call Depedency / Low Credit</li>
+<li>High Call Dependency / Low Credit</li>
 </ol>
 <ul>
 <li>Reduce over-reliance on their calls and offer self-service, AI-enabled proactive guidance</li>
