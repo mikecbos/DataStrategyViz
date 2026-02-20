@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NMF Vector Space Geometry</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+        
+        /* SVG Transition utilities that Tailwind doesn't apply to specific SVG props by default */
+        .svg-transition {
+            transition: all 700ms ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 font-sans selection:bg-indigo-500 selection:text-white min-h-screen flex flex-col items-center overflow-x-hidden p-4 sm:p-8">
+
+    <div class="max-w-6xl w-full">
+        <header class="mb-8 text-center">
+            <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">The Geometry of NMF Vectors</h1>
+            <p class="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto">
+                Why Cosine Similarity collapses non-negative sparse vectors, and why Euclidean Distance preserves the manifold.
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Controls & Explanation Panel -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-xl">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Select Metric</h3>
+                    
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 bg-slate-900 p-1 rounded-lg">
+                        <button id="btn-euclidean" onclick="setMetric('euclidean')" class="flex-1 flex items-center justify-center py-2 px-3 rounded-md text-sm font-semibold transition-all bg-emerald-500 text-white shadow-md">
+                            <i data-lucide="maximize" class="w-4 h-4 mr-2"></i>
+                            Euclidean Distance
+                        </button>
+                        <button id="btn-cosine" onclick="setMetric('cosine')" class="flex-1 flex items-center justify-center py-2 px-3 rounded-md text-sm font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+                            <i data-lucide="compass" class="w-4 h-4 mr-2"></i>
+                            Cosine Similarity
+                        </button>
+                    </div>
+
+                    <div class="mt-8 space-y-4">
+                        <!-- Euclidean Panel -->
+                        <div id="panel-euclidean" class="animate-fade-in-up">
+                            <h4 class="text-lg font-bold text-emerald-400 mb-2">The Euclidean Manifold</h4>
+                            <p class="text-sm text-slate-300 mb-4 leading-relaxed">
+                                Euclidean distance measures the <strong>true spatial distance</strong> between points. It respects both the <em>direction</em> (flavor of work) and the <em>magnitude</em> (intensity/seniority of the work).
+                            </p>
+                            <ul class="text-sm text-slate-400 space-y-2">
+                                <li class="flex items-start"><i data-lucide="arrow-right" class="w-3 h-3 mr-2 mt-1 shrink-0 text-emerald-500"></i> Junior and Senior Engineers are separated by their magnitude (intensity of the components).</li>
+                                <li class="flex items-start"><i data-lucide="arrow-right" class="w-3 h-3 mr-2 mt-1 shrink-0 text-emerald-500"></i> The manifold is healthy, distributed, and thresholding (e.g., cutoff: 0.95) effectively filters out mismatched seniorities.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Cosine Panel -->
+                        <div id="panel-cosine" class="animate-fade-in-up" style="display: none;">
+                            <h4 class="text-lg font-bold text-blue-400 mb-2">The Cosine Collapse</h4>
+                            <p class="text-sm text-slate-300 mb-4 leading-relaxed">
+                                Cosine similarity <strong>normalizes all vectors to a unit circle</strong>. It only cares about the angle between points, entirely destroying magnitude.
+                            </p>
+                            <ul class="text-sm text-slate-400 space-y-2">
+                                <li class="flex items-start"><i data-lucide="arrow-right" class="w-3 h-3 mr-2 mt-1 shrink-0 text-blue-500"></i> NMF vectors are completely non-negative, trapping them in this single 90° quadrant.</li>
+                                <li class="flex items-start"><i data-lucide="arrow-right" class="w-3 h-3 mr-2 mt-1 shrink-0 text-blue-500"></i> Because NMF forces sparsity, vectors hug the axes.</li>
+                                <li class="flex items-start"><i data-lucide="arrow-right" class="w-3 h-3 mr-2 mt-1 shrink-0 text-red-400 font-medium"></i> Look at the Engineers: The Junior, Senior, and Principal all collapse onto the exact same coordinate. They all score 0.99+ similarity.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50 flex items-start">
+                    <i data-lucide="info" class="w-5 h-5 text-indigo-400 mr-3 shrink-0 mt-0.5"></i>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        NMF outputs are strictly non-negative (no negative numbers). This means vectors cannot point in opposite directions (180° apart). The maximum angular difference is only 90°. This extreme confinement makes Cosine highly susceptible to collapsing sparse data.
+                    </p>
+                </div>
+            </div>
+
+            <!-- SVG Canvas -->
+            <div class="lg:col-span-7 bg-slate-800 rounded-xl border border-slate-700 shadow-xl overflow-hidden relative flex justify-center items-center p-2 sm:p-4">
+                <svg id="chart-svg" viewBox="0 0 500 500" class="w-full h-auto overflow-visible" style="max-width: 500px;">
+                    <!-- Content injected via JS -->
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // Data & Math Setup
+        let metric = 'euclidean';
+        const size = 500;
+        const padding = 50;
+        const maxVal = 25;
+        const scale = (size - 2 * padding) / maxVal;
+        
+        const tx = (x) => padding + x * scale;
+        const ty = (y) => size - padding - y * scale;
+
+        const normRadius = 18;
+        const arcRadius = normRadius * scale;
+        const arcPath = `M ${tx(0)} ${ty(normRadius)} A ${arcRadius} ${arcRadius} 0 0 1 ${tx(normRadius)} ${ty(0)}`;
+
+        const jobs = [
+            { id: 'A', title: 'Junior Engineer', x: 2, y: 10, color: '#60a5fa' },
+            { id: 'B', title: 'Senior Engineer', x: 4, y: 20, color: '#3b82f6' },
+            { id: 'C', title: 'Principal Architect', x: 4.8, y: 24, color: '#1e3a8a' },
+            { id: 'D', title: 'Tech Lead', x: 12, y: 12, color: '#a855f7' },
+            { id: 'E', title: 'Junior Manager', x: 10, y: 2, color: '#34d399' },
+            { id: 'F', title: 'Senior Director', x: 20, y: 4, color: '#047857' }
+        ].map(j => {
+            const mag = Math.sqrt(j.x * j.x + j.y * j.y);
+            return { ...j, nx: (j.x / mag) * normRadius, ny: (j.y / mag) * normRadius };
+        });
+
+        // Initialize SVG DOM
+        function initSVG() {
+            const svg = document.getElementById('chart-svg');
+            let innerHTML = '';
+
+            // Grid Lines
+            for(let i=0; i<6; i++) {
+                innerHTML += `
+                    <line x1="${tx(0)}" y1="${ty(i * 5)}" x2="${tx(25)}" y2="${ty(i * 5)}" stroke="#334155" stroke-width="1" stroke-dasharray="4 4" />
+                    <line x1="${tx(i * 5)}" y1="${ty(0)}" x2="${tx(i * 5)}" y2="${ty(25)}" stroke="#334155" stroke-width="1" stroke-dasharray="4 4" />
+                `;
+            }
+
+            // Axes
+            innerHTML += `
+                <line x1="${tx(0)}" y1="${ty(0)}" x2="${tx(26)}" y2="${ty(0)}" stroke="#94a3b8" stroke-width="2" />
+                <line x1="${tx(0)}" y1="${ty(0)}" x2="${tx(0)}" y2="${ty(26)}" stroke="#94a3b8" stroke-width="2" />
+                <text x="${tx(12.5)}" y="${ty(-2.5)}" fill="#94a3b8" font-size="12" text-anchor="middle" font-weight="bold">NMF Component 1 (e.g., "Management")</text>
+                <text x="${tx(-2.5)}" y="${ty(12.5)}" fill="#94a3b8" font-size="12" text-anchor="middle" font-weight="bold" transform="rotate(-90 ${tx(-2.5)} ${ty(12.5)})">NMF Component 2 (e.g., "Engineering")</text>
+            `;
+
+            // Arc
+            innerHTML += `
+                <path id="vis-arc" d="${arcPath}" fill="none" stroke="#1e293b" stroke-width="2" stroke-dasharray="6 6" class="svg-transition" />
+                <text id="vis-arc-text" x="${tx(12)}" y="${ty(14)}" fill="#3b82f6" font-size="12" class="svg-transition opacity-0" transform="rotate(-45 ${tx(12)} ${ty(14)})">Cosine Normalization Boundary</text>
+            `;
+
+            // Data Points
+            jobs.forEach(job => {
+                innerHTML += `
+                    <g id="group-${job.id}">
+                        <!-- Origin Vector Line -->
+                        <line id="origin-${job.id}" x1="${tx(0)}" y1="${ty(0)}" x2="${tx(job.x)}" y2="${ty(job.y)}" stroke="${job.color}" stroke-width="2" stroke-opacity="0.4" class="svg-transition" />
+                        
+                        <!-- Collapse indicator line (Cosine only) -->
+                        <line id="collapse-${job.id}" x1="${tx(job.x)}" y1="${ty(job.y)}" x2="${tx(job.nx)}" y2="${ty(job.ny)}" stroke="${job.color}" stroke-width="1" stroke-dasharray="2 2" class="svg-transition opacity-0" />
+                        
+                        <!-- The Point -->
+                        <circle id="circle-${job.id}" cx="${tx(job.x)}" cy="${ty(job.y)}" r="6" fill="${job.color}" class="svg-transition drop-shadow-lg" />
+                        
+                        <!-- Label -->
+                        <text id="label-${job.id}" x="${tx(job.x) + 8}" y="${ty(job.y) - 8}" fill="#f8fafc" font-size="12" font-weight="600" class="svg-transition drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                            ${job.id}: ${job.title}
+                        </text>
+                    </g>
+                `;
+            });
+
+            svg.innerHTML = innerHTML;
+        }
+
+        // Toggle Logic
+        function setMetric(newMetric) {
+            metric = newMetric;
+
+            // 1. Update Buttons
+            const btnEuc = document.getElementById('btn-euclidean');
+            const btnCos = document.getElementById('btn-cosine');
+            
+            if (metric === 'euclidean') {
+                btnEuc.className = "flex-1 flex items-center justify-center py-2 px-3 rounded-md text-sm font-semibold transition-all bg-emerald-500 text-white shadow-md";
+                btnCos.className = "flex-1 flex items-center justify-center py-2 px-3 rounded-md text-sm font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800";
+            } else {
+                btnCos.className = "flex-1 flex items-center justify-center py-2 px-3 rounded-md text-sm font-semibold transition-all bg-blue-500 text-white shadow-md";
+                btnEuc.className = "flex-1 flex items-center justify-center py-2 px-3 rounded-md text-sm font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800";
+            }
+
+            // 2. Update Text Panels
+            const panelEuc = document.getElementById('panel-euclidean');
+            const panelCos = document.getElementById('panel-cosine');
+            
+            if (metric === 'euclidean') {
+                panelEuc.style.display = 'block';
+                panelCos.style.display = 'none';
+                
+                // Retrigger animation
+                panelEuc.classList.remove('animate-fade-in-up');
+                void panelEuc.offsetWidth; 
+                panelEuc.classList.add('animate-fade-in-up');
+            } else {
+                panelEuc.style.display = 'none';
+                panelCos.style.display = 'block';
+                
+                // Retrigger animation
+                panelCos.classList.remove('animate-fade-in-up');
+                void panelCos.offsetWidth; 
+                panelCos.classList.add('animate-fade-in-up');
+            }
+
+            // 3. Update SVG Elements
+            const arc = document.getElementById('vis-arc');
+            const arcText = document.getElementById('vis-arc-text');
+            
+            if (metric === 'cosine') {
+                arc.setAttribute('stroke', '#3b82f6');
+                arcText.classList.remove('opacity-0');
+                arcText.classList.add('opacity-100');
+            } else {
+                arc.setAttribute('stroke', '#1e293b');
+                arcText.classList.remove('opacity-100');
+                arcText.classList.add('opacity-0');
+            }
+
+            jobs.forEach(job => {
+                const currentX = metric === 'euclidean' ? job.x : job.nx;
+                const currentY = metric === 'euclidean' ? job.y : job.ny;
+                
+                document.getElementById(`origin-${job.id}`).setAttribute('x2', tx(currentX));
+                document.getElementById(`origin-${job.id}`).setAttribute('y2', ty(currentY));
+                
+                const collapseLine = document.getElementById(`collapse-${job.id}`);
+                if (metric === 'cosine') {
+                    collapseLine.classList.remove('opacity-0');
+                    collapseLine.classList.add('opacity-30');
+                } else {
+                    collapseLine.classList.remove('opacity-30');
+                    collapseLine.classList.add('opacity-0');
+                }
+
+                document.getElementById(`circle-${job.id}`).setAttribute('cx', tx(currentX));
+                document.getElementById(`circle-${job.id}`).setAttribute('cy', ty(currentY));
+                
+                document.getElementById(`label-${job.id}`).setAttribute('x', tx(currentX) + 8);
+                document.getElementById(`label-${job.id}`).setAttribute('y', ty(currentY) - 8);
+            });
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            initSVG();
+            // Force initial state
+            setMetric('euclidean');
+        });
+    </script>
+</body>
+</html>
